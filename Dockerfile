@@ -1,6 +1,7 @@
 # ==============================================================================
 # Build With Agora Hackathon - Employee Productivity Assistant Backend Dockerfile
 # Optimized for self-hosted Linux (Umbrel / Docker / Portainer)
+# Uses pre-installed npm inside official Node.js image for 100% build reliability
 # ==============================================================================
 
 # Stage 1: Build TypeScript and prepare dependencies
@@ -8,30 +9,23 @@ FROM node:22-slim AS builder
 
 WORKDIR /app
 
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
+# Copy package manifest
+COPY package.json ./
 
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl && rm -rf /var/lib/apt/lists/*
-RUN corepack enable && corepack prepare pnpm@latest --activate
-RUN ln -sf "$PNPM_HOME/pnpm" /usr/local/bin/pnpm && ln -sf "$PNPM_HOME/pnpx" /usr/local/bin/pnpx
-
-# Copy package manifests
-COPY package.json pnpm-lock.yaml* ./
-
-# Install dependencies for build
-RUN pnpm install --no-frozen-lockfile
+# Install all dependencies (npm is pre-installed in the official Node.js image)
+RUN npm install
 
 # Copy source and TypeScript config
 COPY tsconfig.json ./
 COPY src ./src
 
 # Build TypeScript to dist
-RUN pnpm run build
+RUN npm run build
 
 # Prune devDependencies so only production dependencies remain in node_modules
-RUN pnpm prune --prod
+RUN npm prune --production
 
-# Stage 2: Production Runtime (No package manager needed, just pure Node.js)
+# Stage 2: Production Runtime
 FROM node:22-slim AS runner
 
 WORKDIR /app
