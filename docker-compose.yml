@@ -5,7 +5,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: employee-assistant-server:latest
     container_name: employee-assistant-server
     restart: unless-stopped
     ports:
