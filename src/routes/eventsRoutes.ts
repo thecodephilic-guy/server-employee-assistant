@@ -8,6 +8,7 @@ eventsRouter.get("/", (req: Request, res: Response) => {
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
+  res.setHeader("X-Accel-Buffering", "no"); // Disables buffering in Cloudflare Tunnel, Nginx, and proxies
   res.flushHeaders?.();
 
   const clientId = `client_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
